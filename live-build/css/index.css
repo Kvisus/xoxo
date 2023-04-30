@@ -57,7 +57,7 @@ body {
   display: flex;
   align-items: center;
   gap: 20px;
-  color: var(--yellow);
+  /* color: var(--yellow); */
 }
 
 .turn p {
