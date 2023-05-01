@@ -163,38 +163,31 @@ function init() {
   const view = new View();
   const store = new Store("live-t3-storage-key", players);
 
-  // console.log(store.game);
-
-  function initView() {
-    view.closeAll();
-    view.clearMoves();
-    view.setTurnIndicator(store.game.currentPlayer);
-    view.updateScoreboard(
-      store.stats.playerWithStats[0].wins,
-      store.stats.playerWithStats[1].wins,
-      store.stats.ties
-    );
-    view.initializeMoves(store.game.moves);
-  }
-
-  window.addEventListener('storage', ()=>{
-    console.log('state changed from another tab');
-    initView()
-  })
-
-  initView();
-  
+  //current tab state change
+  store.addEventListener("statechange", () => {
+    view.render(store.game, store.stats);
+  });
+  //diff tab state change
+  window.addEventListener("storage", () => {
+    console.log("state changed from another tab");
+    view.render(store.game, store.stats);
+  });
+  //first load of doc
+  view.render(store.game, store.stats);
 
   view.bindGameResetEvent((event) => {
     store.reset();
-    initView();
+
     // console.log(store.stats);
   });
+
   view.bindNewRoundEvent((event) => {
     store.newRound();
-    initView();
   });
+
   view.bindPlayerMoveEvent((square) => {
+
+    console.log(square);
     const existingMove = store.game.moves.find(
       (move) => move.squareId === +square.id
     );
@@ -203,23 +196,8 @@ function init() {
       return;
     }
 
-    //place an icon of the current player in a square
-    view.handlePlayerMove(square, store.game.currentPlayer);
-
     //advance to next state bu pushing a move to moves arr
     store.playerMove(+square.id);
-
-    if (store.game.status.isComplete) {
-      view.openModal(
-        store.game.status.winner
-          ? `${store.game.status.winner.name} wins`
-          : "Tie"
-      );
-      return;
-    }
-
-    //set next player's turn indicator
-    view.setTurnIndicator(store.game.currentPlayer);
   });
 
   // console.log(view.$.turn);
