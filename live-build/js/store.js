@@ -7,9 +7,8 @@ const initialValue = {
 };
 
 export default class Store {
-  #state = initialValue;
-
-  constructor(players) {
+  constructor(key, players) {
+    this.storageKey = key;
     this.players = players;
   }
 
@@ -63,7 +62,7 @@ export default class Store {
     }
 
     return {
-      currentGameMoves: state.currentGameMoves,
+      moves: state.currentGameMoves,
       currentPlayer,
       status: {
         isComplete: winner != null || state.currentGameMoves.length === 9,
@@ -85,6 +84,7 @@ export default class Store {
 
   reset() {
     const stateClone = structuredClone(this.#getState());
+
     const { status, moves } = this.game;
 
     if (status.isComplete) {
@@ -109,10 +109,6 @@ export default class Store {
     this.#saveState(stateClone);
   }
 
-  #getState() {
-    return this.#state;
-  }
-
   #saveState(stateOrFn) {
     const prevState = this.#getState();
 
@@ -129,6 +125,10 @@ export default class Store {
         throw new Error("invalid state");
     }
 
-    this.#state = newState;
+    window.localStorage.setItem(this.storageKey, JSON.stringify(newState));
+  }
+  #getState() {
+    const item = window.localStorage.getItem(this.storageKey);
+    return item ? JSON.parse(item) : initialValue;
   }
 }
